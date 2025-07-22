@@ -1,0 +1,10 @@
+import type { NextApiRequest, NextApiResponse } from "next";
+import { supabase } from "../../lib/supabaseClient";
+
+export default async function handler(_: NextApiRequest, res: NextApiResponse) {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("id,order_code,email, created_at, order_items(quantity, price, product(name))");
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
+}
