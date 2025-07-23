@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+};
+
 export default function OrderPage() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const { register, handleSubmit } = useForm();
 
   useEffect(() => {
     fetch("/api/products")
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setProducts);
   }, []);
 
@@ -33,11 +39,17 @@ export default function OrderPage() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <h1>הזמנת מוצרים</h1>
-      <input {...register("email")} placeholder="האימייל שלך" required /><br />
+      <input {...register("email")} placeholder="האימייל שלך" required />
+      <br />
       {products.map((p, i) => (
         <div key={p.id}>
           {p.name} - ₪{p.price}
-          <input type="number" {...register(`qty_${i}`)} min="0" defaultValue="0" />
+          <input
+            type="number"
+            {...register(`qty_${i}`)}
+            min="0"
+            defaultValue="0"
+          />
         </div>
       ))}
       <button type="submit">בצע הזמנה</button>
