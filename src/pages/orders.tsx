@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 
-// טיפוס להזמנה
+type OrderItem = {
+  quantity: number;
+  price: number;
+  product: {
+    name: string;
+  };
+};
+
 type Order = {
   id: number;
   order_code: string;
   email: string;
   created_at: string;
-  order_items: {
-    quantity: number;
-    price: number;
-    product: {
-      name: string;
-    };
-  }[];
+  order_items: OrderItem[];
 };
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/orders-list")
@@ -26,48 +26,50 @@ export default function OrdersPage() {
         if (Array.isArray(data)) {
           setOrders(data);
         } else {
-          console.error("Invalid data from server:", data);
-          setError("שגיאה בטעינת ההזמנות");
-          setOrders([]);
+          console.error("Invalid data:", data);
         }
-      })
-      .catch((err) => {
-        console.error("Network or server error:", err);
-        setError("שגיאה בתקשורת עם השרת");
-        setOrders([]);
       });
   }, []);
 
   return (
     <div>
       <h1>כל ההזמנות</h1>
+      {orders.map((order) => {
+        const total = order.order_items.reduce(
+          (sum, item) => sum + item.quantity * item.price,
+          0
+        );
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {orders.map((order) => (
-        <div
-          key={order.id}
-          style={{
-            border: "1px solid black",
-            marginBottom: 10,
-            padding: 10,
-          }}
-        >
-          <strong>הזמנה:</strong> {order.order_code}
-          <br />
-          <strong>אימייל:</strong> {order.email}
-          <br />
-          <strong>תאריך:</strong> {new Date(order.created_at).toLocaleString()}
-          <br />
-          <ul>
-            {order.order_items.map((item, i) => (
-              <li key={i}>
-                {item.product.name} - כמות: {item.quantity} - ₪{item.price}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+        return (
+          <div
+            key={order.id}
+            style={{
+              border: "1px solid black",
+              marginBottom: 20,
+              padding: 10,
+            }}
+          >
+            <strong>מספר הזמנה:</strong> {order.id}
+            <br />
+            <strong>קוד הזמנה:</strong> {order.order_code}
+            <br />
+            <strong>אימייל:</strong> {order.email}
+            <br />
+            <strong>תאריך:</strong>{" "}
+            {new Date(order.created_at).toLocaleString()}
+            <br />
+            <ul>
+              {order.order_items.map((item, i) => (
+                <li key={i}>
+                  {item.product?.name ?? "מוצר לא ידוע"} – כמות: {item.quantity}{" "}
+                  – ₪{item.price} ליחידה – סה"כ ₪{item.quantity * item.price}
+                </li>
+              ))}
+            </ul>
+            <strong>סה״כ להזמנה:</strong> ₪{total}
+          </div>
+        );
+      })}
     </div>
   );
 }

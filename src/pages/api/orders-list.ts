@@ -10,7 +10,7 @@ export default async function handler(_: NextApiRequest, res: NextApiResponse) {
       order_items(
         quantity,
         price,
-        product:products(name)
+        product:products!order_items_product_id_fkey(name)
       )
     `);
 
