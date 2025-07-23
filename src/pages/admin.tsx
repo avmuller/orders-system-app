@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+};
+
 export default function AdminPage() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const { register, handleSubmit, reset } = useForm();
 
   const load = () =>
