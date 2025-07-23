@@ -2,51 +2,36 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "../../lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
 
-type InsertedOrder = {
-  id: number;
-  order_code: string;
-  email: string;
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    const { items, email } = req.body;
+    const { items, email, week } = req.body;
     const order_code = uuidv4();
 
     const { data, error } = await supabase
       .from("orders")
-      .insert({ order_code, email })
-      .select(); // חובה כדי לקבל חזרה את ה-id
+      .insert({ order_code, email, week }) // ✅ הוספנו את week
+      .select();
 
-    if (error) {
-      return res.status(500).json({ error: error.message });
+    if (error || !data || data.length === 0) {
+      return res.status(500).json({ error: error?.message || "Insert failed" });
     }
 
-    if (!data || data.length === 0) {
-      return res
-        .status(500)
-        .json({ error: "Order insert failed – no data returned." });
-    }
+    const order_id = data[0].id;
 
-    const order_id = (data as InsertedOrder[])[0].id;
-
-    const lineInserts = items.map((it: any) => ({
+    const order_items = items.map((item: any) => ({
       order_id,
-      product_id: it.id,
-      quantity: it.quantity,
-      price: it.price,
+      product_id: item.id,
+      quantity: item.quantity,
+      price: item.price,
     }));
 
     const { error: e2 } = await supabase
       .from("order_items")
-      .insert(lineInserts);
-
-    if (e2) {
-      return res.status(500).json({ error: e2.message });
-    }
+      .insert(order_items);
+    if (e2) return res.status(500).json({ error: e2.message });
 
     return res.status(201).json({ order_code });
   }
