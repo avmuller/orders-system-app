@@ -29,7 +29,11 @@ export default async function handler(_: NextApiRequest, res: NextApiResponse) {
       .json({ error: error?.message || "Failed to fetch data" });
   }
 
-  const typedData: OrderItemWithRelations[] = data;
+  const typedData: OrderItemWithRelations[] = data.map((item: any) => ({
+    quantity: item.quantity,
+    order: Array.isArray(item.order) ? item.order[0] : item.order,
+    product: Array.isArray(item.product) ? item.product[0] : item.product,
+  }));
 
   const summaryMap = new Map<string, number>();
 
