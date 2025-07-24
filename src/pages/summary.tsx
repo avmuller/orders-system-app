@@ -7,60 +7,55 @@ type Summary = {
 };
 
 export default function SummaryPage() {
-  const [data, setData] = useState<Summary[]>([]);
+  const [summary, setSummary] = useState<Summary[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/summary")
-      .then((res) => res.json())
-      .then(setData);
+    async function fetchSummary() {
+      try {
+        const res = await fetch("/api/summary");
+        const data = await res.json();
+        setSummary(data);
+      } catch (error) {
+        console.error("Failed to fetch summary", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSummary();
   }, []);
 
-  const weeks = Array.from(new Set(data.map((d) => d.week)));
+  // קיבוץ לפי שבת
+  const grouped = summary.reduce<Record<string, Summary[]>>((acc, item) => {
+    if (!acc[item.week]) acc[item.week] = [];
+    acc[item.week].push(item);
+    return acc;
+  }, {});
+
+  if (loading) return <p>טוען נתונים...</p>;
 
   return (
-    <div
-      style={{
-        direction: "rtl",
-        fontFamily: "Arial",
-        padding: 20,
-        textAlign: "center",
-      }}
-    >
-      <h2>סיכום הזמנות לפי שבת</h2>
+    <div style={{ maxWidth: 600, margin: "auto", padding: "1rem" }}>
+      <h1 style={{ textAlign: "center" }}>סיכום הזמנות לפי שבת</h1>
 
-      {weeks.map((week) => (
-        <div key={week} style={{ marginBottom: 30 }}>
-          <h3 style={{ borderBottom: "1px solid #ccc", paddingBottom: 5 }}>
-            {week}
-          </h3>
-          <table style={{ margin: "0 auto", borderCollapse: "collapse" }}>
+      {Object.entries(grouped).map(([week, items]) => (
+        <div key={week} style={{ marginBottom: "2rem" }}>
+          <h2 style={{ textAlign: "center" }}>{week}</h2>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr>
-                <th style={{ padding: "5px 10px", border: "1px solid #ccc" }}>
-                  מוצר
-                </th>
-                <th style={{ padding: "5px 10px", border: "1px solid #ccc" }}>
-                  סה״כ כמות
-                </th>
+              <tr style={{ backgroundColor: "#f0f0f0" }}>
+                <th style={cellStyle}>מוצר</th>
+                <th style={cellStyle}>סה״כ כמות</th>
               </tr>
             </thead>
             <tbody>
-              {data
-                .filter((d) => d.week === week)
-                .map((item, i) => (
-                  <tr key={i}>
-                    <td
-                      style={{ padding: "5px 10px", border: "1px solid #ccc" }}
-                    >
-                      {item.product}
-                    </td>
-                    <td
-                      style={{ padding: "5px 10px", border: "1px solid #ccc" }}
-                    >
-                      {item.total_quantity}
-                    </td>
-                  </tr>
-                ))}
+              {items.map((item, i) => (
+                <tr key={i}>
+                  <td style={cellStyle}>{item.product}</td>
+                  <td style={cellStyle}>{item.total_quantity}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -68,3 +63,9 @@ export default function SummaryPage() {
     </div>
   );
 }
+
+const cellStyle = {
+  border: "1px solid #ccc",
+  padding: "8px",
+  textAlign: "center" as const,
+};

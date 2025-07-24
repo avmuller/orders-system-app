@@ -1,13 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "../../lib/supabaseClient";
 
-// טיפוס שמתאים למבנה שה-SELECT מחזיר (שדות מקוננים בתוך מערכים)
+// טיפוס שמתאים בדיוק למה שחוזר מהשאילתה של Supabase
 type OrderItemWithRelations = {
   quantity: number;
-  order: { week: string }[]; // מקושר לטבלת orders
-  product: { name: string }[]; // מקושר לטבלת products
+  order: { week: string }; // ✅ אובייקט ולא מערך
+  product: { name: string }; // ✅ אובייקט ולא מערך
 };
 
+// טיפוס הפלט
 type Summary = {
   week: string;
   product: string;
@@ -22,17 +23,22 @@ export default async function handler(_: NextApiRequest, res: NextApiResponse) {
   `);
 
   if (error || !data) {
-    return res.status(500).json({ error: error?.message || "No data" });
+    console.error("Supabase error:", error);
+    return res
+      .status(500)
+      .json({ error: error?.message || "Failed to fetch data" });
   }
 
-  const typedData = data as OrderItemWithRelations[];
+  const typedData: OrderItemWithRelations[] = data;
 
   const summaryMap = new Map<string, number>();
 
   for (const item of typedData) {
-    const week = item.order?.[0]?.week || "ללא שבת";
-    const name = item.product?.[0]?.name || "מוצר לא ידוע";
-    const key = `${week}__${name}`;
+    console.log("✅ Found:", item); // לצורכי דיבוג
+    const week = item.order?.week || "שבת לא ידועה";
+    const product = item.product?.name || "מוצר לא ידוע";
+    const key = `${week}__${product}`;
+
     summaryMap.set(key, (summaryMap.get(key) || 0) + item.quantity);
   }
 

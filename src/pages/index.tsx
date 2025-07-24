@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-// טיפוס למוצר
 type Product = {
   id: number;
   name: string;
@@ -10,7 +9,7 @@ type Product = {
 
 export default function OrderPage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, reset, watch } = useForm();
 
   useEffect(() => {
     fetch("/api/products")
@@ -18,9 +17,15 @@ export default function OrderPage() {
       .then(setProducts);
   }, []);
 
+  const watchedQuantities = watch();
+  const totalPrice = products.reduce((acc, p, i) => {
+    const qty = Number(watchedQuantities[`qty_${i}`]) || 0;
+    return acc + qty * p.price;
+  }, 0);
+
   const onSubmit = async (data: any) => {
     const items = products
-      .filter((_, i) => data[`qty_${i}`] > 0)
+      .filter((_, i) => Number(data[`qty_${i}`]) > 0)
       .map((p, i) => ({
         id: p.id,
         quantity: Number(data[`qty_${i}`]),
@@ -28,7 +33,7 @@ export default function OrderPage() {
       }));
 
     if (!items.length) {
-      alert("לא נבחרו מוצרים להזמנה");
+      alert("No products selected for the order.");
       return;
     }
 
@@ -37,20 +42,31 @@ export default function OrderPage() {
     if (data.shabbat_ekev) shabbatOptions.push("עקב");
 
     if (!shabbatOptions.length) {
-      alert("יש לבחור לפחות שבת אחת");
+      alert("Please select at least one Shabbat.");
       return;
     }
-    console.log("שבתות שנבחרו:", shabbatOptions);
+
+    const orderIds: number[] = [];
 
     for (const week of shabbatOptions) {
-      await fetch("/api/orders", {
+      const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items, email: data.email, week }),
       });
+
+      const result = await res.json();
+      if (result.id) {
+        orderIds.push(result.id);
+      }
     }
 
-    alert("ההזמנה נשלחה בהצלחה!");
+    alert(
+      "Order placed successfully!\nPlease save your order IDs for future reference:\n" +
+        orderIds.map((id, i) => `${shabbatOptions[i]}: ${id}`).join("\n")
+    );
+
+    reset();
   };
 
   return (
@@ -58,46 +74,106 @@ export default function OrderPage() {
       onSubmit={handleSubmit(onSubmit)}
       style={{
         direction: "rtl",
-        maxWidth: 600,
+        maxWidth: 700,
         margin: "0 auto",
         fontFamily: "Arial",
+        background: "#f9f9f9",
+        padding: 20,
+        borderRadius: 10,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      <h1>הזמנת מוצרים</h1>
+      <h1 style={{ textAlign: "center", marginBottom: 20 }}>Product Order</h1>
 
       <input
         {...register("email")}
-        placeholder="האימייל שלך"
+        placeholder="Your email"
         required
-        style={{ width: "100%", padding: 8, marginBottom: 10 }}
+        style={{
+          width: "100%",
+          padding: 10,
+          marginBottom: 15,
+          border: "1px solid #ccc",
+          borderRadius: 5,
+          textAlign: "right",
+        }}
       />
 
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ marginBottom: 20 }}>
         <label>
-          <input type="checkbox" {...register("shabbat_veetchanan")} /> שבת
+          <input type="checkbox" {...register("shabbat_veetchanan")} /> Shabbat
           ואתחנן
         </label>
         <br />
         <label>
-          <input type="checkbox" {...register("shabbat_ekev")} /> שבת עקב
+          <input type="checkbox" {...register("shabbat_ekev")} /> Shabbat עקב
         </label>
       </div>
 
-      {products.map((p, i) => (
-        <div key={p.id} style={{ marginBottom: 5 }}>
-          {p.name} - ₪{p.price}
-          <input
-            type="number"
-            {...register(`qty_${i}`)}
-            min="0"
-            defaultValue="0"
-            style={{ marginRight: 10, width: 60 }}
-          />
-        </div>
-      ))}
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          direction: "rtl",
+          marginBottom: 20,
+        }}
+      >
+        <thead>
+          <tr style={{ backgroundColor: "#f0f0f0" }}>
+            <th style={{ padding: 10, border: "1px solid #ccc" }}>Product</th>
+            <th style={{ padding: 10, border: "1px solid #ccc" }}>
+              Price (CHF)
+            </th>
+            <th style={{ padding: 10, border: "1px solid #ccc" }}>Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((p, i) => (
+            <tr key={p.id}>
+              <td style={{ padding: 10, border: "1px solid #eee" }}>
+                {p.name}
+              </td>
+              <td style={{ padding: 10, border: "1px solid #eee" }}>
+                {p.price}
+              </td>
+              <td
+                style={{
+                  padding: 10,
+                  border: "1px solid #eee",
+                  textAlign: "center",
+                }}
+              >
+                <input
+                  type="number"
+                  {...register(`qty_${i}`)}
+                  min="0"
+                  style={{ width: 60, padding: 5, textAlign: "center" }}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      <button type="submit" style={{ marginTop: 15, padding: "10px 20px" }}>
-        בצע הזמנה
+      <div style={{ marginTop: 10, fontWeight: "bold", fontSize: 18 }}>
+        Total to pay: CHF {totalPrice.toFixed(2)}
+      </div>
+
+      <button
+        type="submit"
+        style={{
+          marginTop: 20,
+          width: "100%",
+          padding: "10px 0",
+          backgroundColor: "#0070f3",
+          color: "#fff",
+          border: "none",
+          borderRadius: 5,
+          fontSize: 16,
+          cursor: "pointer",
+        }}
+      >
+        Place Order
       </button>
     </form>
   );

@@ -12,14 +12,14 @@ export default async function handler(
 
     const { data, error } = await supabase
       .from("orders")
-      .insert({ order_code, email, week }) // ✅ הוספנו את week
-      .select();
+      .insert({ order_code, email, week })
+      .select(); // מקבל את השורה המלאה בחזרה כולל id
 
     if (error || !data || data.length === 0) {
       return res.status(500).json({ error: error?.message || "Insert failed" });
     }
 
-    const order_id = data[0].id;
+    const order_id = data[0].id; // זה המספר שאתה רוצה
 
     const order_items = items.map((item: any) => ({
       order_id,
@@ -31,9 +31,10 @@ export default async function handler(
     const { error: e2 } = await supabase
       .from("order_items")
       .insert(order_items);
+
     if (e2) return res.status(500).json({ error: e2.message });
 
-    return res.status(201).json({ order_code });
+    return res.status(201).json({ id: order_id }); // ⬅️ מחזיר רק את ה-id הפשוט
   }
 
   res.setHeader("Allow", ["POST"]);
