@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/router";
 
 type Product = {
   id: number;
@@ -10,6 +11,7 @@ type Product = {
 export default function OrderPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const { register, handleSubmit, reset, watch } = useForm();
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/products")
@@ -61,10 +63,13 @@ export default function OrderPage() {
       }
     }
 
-    alert(
-      "Order placed successfully!\nPlease save your order IDs for future reference:\n" +
-        orderIds.map((id, i) => `${shabbatOptions[i]}: ${id}`).join("\n")
-    );
+    router.push({
+      pathname: "/confirmation",
+      query: {
+        ids: orderIds.join(","),
+        weeks: shabbatOptions.join(","),
+      },
+    });
 
     reset();
   };
@@ -73,7 +78,7 @@ export default function OrderPage() {
     <form
       onSubmit={handleSubmit(onSubmit)}
       style={{
-        direction: "rtl",
+        direction: "ltr",
         maxWidth: 700,
         margin: "0 auto",
         fontFamily: "Arial",
@@ -95,18 +100,17 @@ export default function OrderPage() {
           marginBottom: 15,
           border: "1px solid #ccc",
           borderRadius: 5,
-          textAlign: "right",
         }}
       />
 
       <div style={{ marginBottom: 20 }}>
         <label>
-          <input type="checkbox" {...register("shabbat_veetchanan")} /> Shabbat
+          <input type="checkbox" {...register("shabbat_veetchanan")} /> שבת
           ואתחנן
         </label>
         <br />
         <label>
-          <input type="checkbox" {...register("shabbat_ekev")} /> Shabbat עקב
+          <input type="checkbox" {...register("shabbat_ekev")} /> שבת עקב
         </label>
       </div>
 
@@ -114,7 +118,6 @@ export default function OrderPage() {
         style={{
           width: "100%",
           borderCollapse: "collapse",
-          direction: "rtl",
           marginBottom: 20,
         }}
       >
