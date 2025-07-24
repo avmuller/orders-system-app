@@ -63,7 +63,6 @@ export default function OrderPage() {
         orderIds.push(result.id);
       }
     }
-    alert("בדוק קונסול לפני מעבר");
 
     router.push({
       pathname: "/confirmation",
