@@ -26,14 +26,15 @@ export default function OrderPage() {
   }, 0);
 
   const onSubmit = async (data: any) => {
+    console.log("Form data:", data); // ← בדוק פה את הכמויות
+
     const items = products
-      .filter((_, i) => Number(data[`qty_${i}`]) > 0)
       .map((p, i) => ({
         id: p.id,
         quantity: Number(data[`qty_${i}`]),
         price: Number(p.price),
-      }));
-
+      }))
+      .filter((item) => item.quantity > 0);
     if (!items.length) {
       alert("No products selected for the order.");
       return;
@@ -62,6 +63,7 @@ export default function OrderPage() {
         orderIds.push(result.id);
       }
     }
+    alert("בדוק קונסול לפני מעבר");
 
     router.push({
       pathname: "/confirmation",
