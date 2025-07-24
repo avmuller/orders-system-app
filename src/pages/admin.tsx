@@ -51,7 +51,6 @@ export default function AdminPage() {
       }}
     >
       <h1 style={{ textAlign: "center", marginBottom: 20 }}>ניהול מוצרים</h1>
-
       <form
         onSubmit={handleSubmit(onSubmit)}
         style={{ display: "flex", flexDirection: "column", gap: 10 }}
@@ -69,6 +68,7 @@ export default function AdminPage() {
         />
         <input
           type="number"
+          step="any" // <--- זה הפתרון
           {...register("price")}
           placeholder="מחיר"
           required
