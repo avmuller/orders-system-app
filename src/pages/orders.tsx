@@ -28,7 +28,6 @@ export default function OrdersPage() {
         if (Array.isArray(data)) {
           setOrders(data);
         } else {
-          console.error("Invalid data:", data);
         }
       });
   }, []);

@@ -23,7 +23,6 @@ export default async function handler(_: NextApiRequest, res: NextApiResponse) {
   `);
 
   if (error || !data) {
-    console.error("Supabase error:", error);
     return res
       .status(500)
       .json({ error: error?.message || "Failed to fetch data" });
@@ -38,7 +37,6 @@ export default async function handler(_: NextApiRequest, res: NextApiResponse) {
   const summaryMap = new Map<string, number>();
 
   for (const item of typedData) {
-    console.log("✅ Found:", item); // לצורכי דיבוג
     const week = item.order?.week || "שבת לא ידועה";
     const product = item.product?.name || "מוצר לא ידוע";
     const key = `${week}__${product}`;

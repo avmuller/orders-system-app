@@ -17,7 +17,6 @@ export default function SummaryPage() {
         const data = await res.json();
         setSummary(data);
       } catch (error) {
-        console.error("Failed to fetch summary", error);
       } finally {
         setLoading(false);
       }
