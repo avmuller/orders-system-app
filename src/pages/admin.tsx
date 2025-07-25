@@ -5,6 +5,7 @@ type Product = {
   id: number;
   name: string;
   price: number;
+  category: string;
 };
 
 export default function AdminPage() {
@@ -51,6 +52,7 @@ export default function AdminPage() {
       }}
     >
       <h1 style={{ textAlign: "center", marginBottom: 20 }}>ניהול מוצרים</h1>
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         style={{ display: "flex", flexDirection: "column", gap: 10 }}
@@ -66,9 +68,30 @@ export default function AdminPage() {
             textAlign: "right",
           }}
         />
+
+        <select
+          {...register("category")}
+          required
+          defaultValue=""
+          style={{
+            padding: 10,
+            borderRadius: 5,
+            border: "1px solid #ccc",
+            textAlign: "right",
+          }}
+        >
+          <option value="" disabled>
+            בחר קטגוריה
+          </option>
+          <option value="Shabbat menu">Shabbat menu</option>
+          <option value="dips">dips</option>
+          <option value="cakes">cakes</option>
+          <option value="milk produkt">milk produkt</option>
+        </select>
+
         <input
           type="number"
-          step="any" // <--- זה הפתרון
+          step="any"
           {...register("price")}
           placeholder="מחיר"
           required
@@ -79,6 +102,7 @@ export default function AdminPage() {
             textAlign: "right",
           }}
         />
+
         <button
           type="submit"
           style={{
@@ -110,7 +134,7 @@ export default function AdminPage() {
             }}
           >
             <span>
-              {p.name} - CHF {p.price}
+              {p.name} - CHF {p.price} ({p.category})
             </span>
             <button
               onClick={() => del(p.id)}

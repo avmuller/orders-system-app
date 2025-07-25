@@ -6,6 +6,7 @@ type Product = {
   id: number;
   name: string;
   price: number;
+  category?: string;
 };
 
 export default function OrderPage() {
@@ -19,15 +20,25 @@ export default function OrderPage() {
       .then(setProducts);
   }, []);
 
+  // קיבוץ לפי קטגוריה
+  const groupedByCategory = products.reduce<Record<string, Product[]>>(
+    (acc, product) => {
+      const key = product.category || "ללא קטגוריה";
+      acc[key] = acc[key] || [];
+      acc[key].push(product);
+      return acc;
+    },
+    {}
+  );
+
   const watchedQuantities = watch();
+
   const totalPrice = products.reduce((acc, p, i) => {
     const qty = Number(watchedQuantities[`qty_${i}`]) || 0;
     return acc + qty * p.price;
   }, 0);
 
   const onSubmit = async (data: any) => {
-    console.log("Form data:", data); // ← בדוק פה את הכמויות
-
     const items = products
       .map((p, i) => ({
         id: p.id,
@@ -35,6 +46,7 @@ export default function OrderPage() {
         price: Number(p.price),
       }))
       .filter((item) => item.quantity > 0);
+
     if (!items.length) {
       alert("No products selected for the order.");
       return;
@@ -59,9 +71,7 @@ export default function OrderPage() {
       });
 
       const result = await res.json();
-      if (result.id) {
-        orderIds.push(result.id);
-      }
+      if (result.id) orderIds.push(result.id);
     }
 
     router.push({
@@ -131,32 +141,54 @@ export default function OrderPage() {
             <th style={{ padding: 10, border: "1px solid #ccc" }}>Quantity</th>
           </tr>
         </thead>
-        <tbody>
-          {products.map((p, i) => (
-            <tr key={p.id}>
-              <td style={{ padding: 10, border: "1px solid #eee" }}>
-                {p.name}
-              </td>
-              <td style={{ padding: 10, border: "1px solid #eee" }}>
-                {p.price}
-              </td>
+
+        {Object.entries(groupedByCategory).map(([category, items]) => (
+          <tbody key={category}>
+            <tr>
               <td
+                colSpan={3}
                 style={{
+                  fontWeight: "bold",
+                  background: "#f0f4f8", // תכלת-אפרפר עדין
+                  color: "#333", // אפור כהה לטקסט
                   padding: 10,
-                  border: "1px solid #eee",
                   textAlign: "center",
+                  fontSize: 15,
+                  borderTop: "1px solid #d0d7de",
                 }}
               >
-                <input
-                  type="number"
-                  {...register(`qty_${i}`)}
-                  min="0"
-                  style={{ width: 60, padding: 5, textAlign: "center" }}
-                />
+                {category}
               </td>
             </tr>
-          ))}
-        </tbody>
+            {items.map((p) => {
+              const index = products.findIndex((prod) => prod.id === p.id);
+              return (
+                <tr key={p.id}>
+                  <td style={{ padding: 10, border: "1px solid #eee" }}>
+                    {p.name}
+                  </td>
+                  <td style={{ padding: 10, border: "1px solid #eee" }}>
+                    {p.price}
+                  </td>
+                  <td
+                    style={{
+                      padding: 10,
+                      border: "1px solid #eee",
+                      textAlign: "center",
+                    }}
+                  >
+                    <input
+                      type="number"
+                      {...register(`qty_${index}`)}
+                      min="0"
+                      style={{ width: 60, padding: 5, textAlign: "center" }}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        ))}
       </table>
 
       <div style={{ marginTop: 10, fontWeight: "bold", fontSize: 18 }}>

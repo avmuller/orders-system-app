@@ -12,19 +12,19 @@ export default async function handler(
   }
 
   if (req.method === "POST") {
-    const { name, price } = req.body;
+    const { name, price, category } = req.body;
     const { data, error } = await supabase
       .from("products")
-      .insert({ name, price });
+      .insert({ name, price, category });
     if (error) return res.status(500).json({ error: error.message });
     return res.status(201).json(data);
   }
 
   if (req.method === "PUT") {
-    const { id, name, price } = req.body;
+    const { id, name, price, category } = req.body;
     const { data, error } = await supabase
       .from("products")
-      .update({ name, price })
+      .update({ name, price, category })
       .eq("id", id);
     if (error) return res.status(500).json({ error: error.message });
     return res.json(data);
