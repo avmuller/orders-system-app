@@ -20,7 +20,6 @@ export default function OrderPage() {
       .then(setProducts);
   }, []);
 
-  // קיבוץ לפי קטגוריה
   const groupedByCategory = products.reduce<Record<string, Product[]>>(
     (acc, product) => {
       const key = product.category || "ללא קטגוריה";
@@ -40,12 +39,26 @@ export default function OrderPage() {
 
   const onSubmit = async (data: any) => {
     const items = products
-      .map((p, i) => ({
-        id: p.id,
-        quantity: Number(data[`qty_${i}`]),
-        price: Number(p.price),
-      }))
-      .filter((item) => item.quantity > 0);
+      .map((p, i) => {
+        const quantity = Number(data[`qty_${i}`]);
+        if (!quantity) return null;
+        return {
+          id: p.id,
+          name: p.name,
+          quantity,
+          price: p.price,
+        };
+      })
+      .filter(
+        (
+          item
+        ): item is {
+          id: number;
+          name: string;
+          quantity: number;
+          price: number;
+        } => item !== null
+      );
 
     if (!items.length) {
       alert("No products selected for the order.");
@@ -67,24 +80,35 @@ export default function OrderPage() {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, email: data.email, week }),
+        body: JSON.stringify({
+          items,
+          email: data.email,
+          full_name: data.full_name,
+          phone_number: data.phone_number,
+          week,
+        }),
       });
 
       const result = await res.json();
       if (result.id) orderIds.push(result.id);
     }
 
+    const total = items.reduce(
+      (sum, item) => sum + item.quantity * item.price,
+      0
+    );
+
     router.push({
       pathname: "/confirmation",
       query: {
         ids: orderIds.join(","),
         weeks: shabbatOptions.join(","),
+        name: data.full_name,
+        total: total.toFixed(2),
+        items: encodeURIComponent(JSON.stringify(items)),
       },
     });
-
-    reset();
   };
-
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -104,6 +128,32 @@ export default function OrderPage() {
       <input
         {...register("email")}
         placeholder="Your email"
+        required
+        style={{
+          width: "100%",
+          padding: 10,
+          marginBottom: 15,
+          border: "1px solid #ccc",
+          borderRadius: 5,
+        }}
+      />
+
+      <input
+        {...register("full_name")}
+        placeholder="Full name"
+        required
+        style={{
+          width: "100%",
+          padding: 10,
+          marginBottom: 15,
+          border: "1px solid #ccc",
+          borderRadius: 5,
+        }}
+      />
+
+      <input
+        {...register("phone_number")}
+        placeholder="Phone number"
         required
         style={{
           width: "100%",
@@ -149,8 +199,8 @@ export default function OrderPage() {
                 colSpan={3}
                 style={{
                   fontWeight: "bold",
-                  background: "#f0f4f8", // תכלת-אפרפר עדין
-                  color: "#333", // אפור כהה לטקסט
+                  background: "#f0f4f8",
+                  color: "#333",
                   padding: 10,
                   textAlign: "center",
                   fontSize: 15,

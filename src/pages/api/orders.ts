@@ -7,19 +7,26 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    const { items, email, week } = req.body;
+    const { items, email, full_name, phone_number, week } = req.body;
     const order_code = uuidv4();
 
+    // הוספת ההזמנה עם שם ומספר טלפון
     const { data, error } = await supabase
       .from("orders")
-      .insert({ order_code, email, week })
-      .select(); // מקבל את השורה המלאה בחזרה כולל id
+      .insert({
+        order_code,
+        email,
+        full_name,
+        phone_number,
+        week,
+      })
+      .select();
 
     if (error || !data || data.length === 0) {
       return res.status(500).json({ error: error?.message || "Insert failed" });
     }
 
-    const order_id = data[0].id; // זה המספר שאתה רוצה
+    const order_id = data[0].id;
 
     const order_items = items.map((item: any) => ({
       order_id,
@@ -34,7 +41,7 @@ export default async function handler(
 
     if (e2) return res.status(500).json({ error: e2.message });
 
-    return res.status(201).json({ id: order_id }); // ⬅️ מחזיר רק את ה-id הפשוט
+    return res.status(201).json({ id: order_id });
   }
 
   res.setHeader("Allow", ["POST"]);

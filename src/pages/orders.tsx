@@ -13,13 +13,15 @@ type Order = {
   created_at: string;
   week: string | null;
   email: string;
+  full_name: string | null;
+  phone_number: string | null;
   order_items: OrderItem[];
 };
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filterWeek, setFilterWeek] = useState("");
-  const [searchId, setSearchId] = useState(""); // ✅ שדה חיפוש לפי ID
+  const [searchId, setSearchId] = useState("");
 
   useEffect(() => {
     fetch("/api/orders-list")
@@ -27,7 +29,6 @@ export default function OrdersPage() {
       .then((data) => {
         if (Array.isArray(data)) {
           setOrders(data);
-        } else {
         }
       });
   }, []);
@@ -48,7 +49,6 @@ export default function OrdersPage() {
     }
   };
 
-  // 🔎 סינון לפי שבוע ו/או ID
   const filtered = orders.filter((o) => {
     const matchesWeek = filterWeek
       ? (o.week || "").trim() === filterWeek
@@ -70,7 +70,6 @@ export default function OrdersPage() {
     >
       <h2 style={{ fontSize: "20px" }}>רשימת הזמנות</h2>
 
-      {/* 🔍 חיפוש לפי ID */}
       <input
         type="text"
         placeholder="חפש לפי מספר הזמנה"
@@ -84,7 +83,6 @@ export default function OrdersPage() {
         }}
       />
 
-      {/* סינון לפי שבוע */}
       <select
         onChange={(e) => setFilterWeek(e.target.value)}
         value={filterWeek}
@@ -120,7 +118,6 @@ export default function OrdersPage() {
               textAlign: "right",
             }}
           >
-            {/* 📦 פרטי הזמנה עם רווחים */}
             <div style={{ marginBottom: 10 }}>
               <div style={{ marginBottom: 5 }}>
                 <strong>מספר הזמנה:</strong> {order.id}
@@ -131,6 +128,12 @@ export default function OrdersPage() {
               <div style={{ marginBottom: 5 }}>
                 <strong>תאריך:</strong>{" "}
                 {new Date(order.created_at).toLocaleString()}
+              </div>
+              <div style={{ marginBottom: 5 }}>
+                <strong>שם מלא:</strong> {order.full_name || "—"}
+              </div>
+              <div style={{ marginBottom: 5 }}>
+                <strong>טלפון:</strong> {order.phone_number || "—"}
               </div>
               <div style={{ fontSize: "14px", color: "#555" }}>
                 <strong>אימייל:</strong> {order.email || "—"}
