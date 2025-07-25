@@ -151,15 +151,15 @@ export default function OrdersPage() {
                   <tr key={i}>
                     <td>{item.product?.name}</td>
                     <td>{item.quantity}</td>
-                    <td>₪{item.price}</td>
-                    <td>₪{item.quantity * item.price}</td>
+                    <td>{item.price}</td>
+                    <td>{item.quantity * item.price}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
             <div style={{ marginTop: 10 }}>
-              <strong>סה״כ להזמנה:</strong> ₪{total}
+              <strong>סה״כ להזמנה:</strong> {total}
             </div>
 
             <button
