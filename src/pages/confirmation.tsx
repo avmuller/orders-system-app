@@ -72,7 +72,7 @@ export default function ConfirmationPage() {
 
       <p style={{ marginTop: 20 }}>
         If you'd like to modify your order, please contact us at:{" "}
-        <a href="mailto:f67646@gmail.com">f67646@gmail.com</a>
+        <a href="mailto:jewishsaas@gmail.com">jewishsaas@gmail.com</a>
       </p>
     </div>
   );
