@@ -109,6 +109,7 @@ export default function OrderPage() {
       },
     });
   };
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -123,6 +124,46 @@ export default function OrderPage() {
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
+      {/* 🔼 Section: Header Content from the Flyer */}
+      <div
+        style={{
+          marginBottom: 30,
+          fontSize: 14,
+          lineHeight: 1.6,
+          textAlign: "center",
+          border: "1px solid #ddd",
+          padding: 20,
+          borderRadius: 10,
+          backgroundColor: "#fffbee",
+        }}
+      >
+        <div style={{ fontWeight: "bold", fontSize: 24, color: "#333" }}>
+          Oneg Shabbes – Saastal 2025
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <strong style={{ backgroundColor: "yellow" }}>
+            ALL ORDERS MUST BE PAID and cannot be cancelled
+          </strong>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          Please note orders must be collected from Saas fee near Alfa
+        </div>
+        <div style={{ marginTop: 8 }}>
+          For all other inquiries call on <strong>+44 7775 925060</strong> from
+          7.30 till 9.30 pm
+        </div>
+        <div style={{ color: "red", fontWeight: "bold", marginTop: 10 }}>
+          Orders for Shabbes must be placed latest by Tuesday before!
+        </div>
+        <div style={{ marginTop: 8 }}>
+          For weekdays meals contact <strong>onegshabbes@gmail.com</strong>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          Our service will be available for shabbosim <strong>08.08</strong> &{" "}
+          <strong>15.08</strong>
+        </div>
+      </div>
+
       <h1 style={{ textAlign: "center", marginBottom: 20 }}>Product Order</h1>
 
       <input
