@@ -87,6 +87,7 @@ export default function AdminPage() {
           <option value="dips">dips</option>
           <option value="cakes">cakes</option>
           <option value="milk produkt">milk produkt</option>
+          <option value="Barbecue">Barbecue</option> {/* ← החדש */}
         </select>
 
         <input

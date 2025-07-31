@@ -156,7 +156,7 @@ export default function OrderPage() {
           Orders for Shabbes must be placed latest by Tuesday before!
         </div>
         <div style={{ marginTop: 8 }}>
-          For weekdays meals contact <strong>onegshabbes@gmail.com</strong>
+          For weekdays meals contact <strong>oinegshabbes@gmail.com</strong>
         </div>
         <div style={{ marginTop: 8 }}>
           Our service will be available for shabbosim <strong>08.08</strong> &{" "}
